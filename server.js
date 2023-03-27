@@ -4,6 +4,7 @@ const { response } = require('express');
 const express = require('express');
 const app = express();
 const port = 3000;
+require('dotenv').config();
 
 app.use(express.json());
 app.use(cors());
@@ -19,30 +20,30 @@ app.get('/animes', (request, response) => {
 
 app.get('/animes/:name', (request, response) => {
     const name = request.params.name
+    const animes = require("./anime.json")
+    console.log("animes", animes)
     const filtered = animes.filter((anime) => anime.title.toLowerCase().includes(name.toLowerCase()))
+    console.log("filtered", filtered)
+    response.status(200).send(filtered)
 })
 
 app.post('/alert', (request, response) => {
     const { email, anime, dataReleased, name } = request.body;
 
-    console.log(email, anime, dataReleased, name);
-
-    sgMail.setApiKey('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');
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
     const msg = {
         to: email,
-        from: 'ulrich_sk8@hotmail.com',
-        subject: `Ola ${name} - Teste Alerta`,
-        html: `<p><strong>anime:</strong> ${anime} / <strong>released:</strong> ${dataReleased}</p>`,
+        from: 'ulrich_isantos@hotmail.com',
+        subject: `Olá ${name} - Não esqueça de ver esse anime!`,
+        html: `<p><strong>anime:</strong>Hoje lança um episódio quentinho de ${anime} / <strong>Data:</strong> ${dataReleased}</p>`,
     };
 
     sgMail.send(msg)
         .then(sgData=>{
-            console.log("sgData=", sgData);
             response.status(200).send('EMAIL ENVIADO!');
         })
         .catch(errs=>{
-            console.log("sgMail errors", errs);
             response.status(400).send('FALHOU :(');
         });
 });
